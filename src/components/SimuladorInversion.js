@@ -1,3 +1,255 @@
+import TextField from "@mui/material/TextField";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Grid,
+  InputLabel,
+  Radio,
+  RadioGroup,
+} from "@mui/material";
+import "../App.css";
+import { useState } from "react";
+import { fetchJson } from "../hooks/fetchJson";
+import MinValue from "./MinValue";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import TableInversion from "./TableInversion";
+
 export const SimuladorInversion = () => {
-  return <div>SimuladorInversion</div>;
+  const [showResults, setShowResults] = useState(false);
+  const [mountRequired, setMountRequiered] = useState();
+  const [termRequired, setTermRequiered] = useState();
+  const [showMinValueMessage, setShowMinValueMessage] = useState();
+  const [showMinTermMessage, setShowMinTermMessage] = useState();
+  const [dataTable, setDataTable] = useState();
+  const [formulario, setFormulario] = useState({
+    PagoInteres: null,
+    Monto: null,
+    Plazo: null,
+    Periodicidad: null,
+  });
+
+  const handleChangeMount = (event) => {
+    const { name, value } = event.target;
+
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+    parseInt(value) < 31 || parseInt(value) > 32547
+      ? setShowMinValueMessage(true)
+      : setShowMinValueMessage(false);
+    value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
+  };
+
+  const handleChangeTerm = (event) => {
+    const { name, value } = event.target;
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+    parseInt(value) < 100 || parseInt(value) > 10000000
+      ? setShowMinTermMessage(true)
+      : setShowMinTermMessage(false);
+    value.trim() === "" ? setTermRequiered(true) : setTermRequiered(false);
+  };
+
+  const handleChangePeriod = (event) => {
+    const { name, value } = event.target;
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log(formulario);
+
+    !mountRequired &&
+    !termRequired &&
+    !showMinValueMessage &&
+    !showMinTermMessage
+      ? fetchData()
+      : console.log("No Paso");
+  };
+  const fetchData = async () => {
+    try {
+      let periodicidadValue = formulario.Periodicidad || ""; // Valor por defecto, se mantiene si ya estaba seleccionado
+      if (formulario.PagoInteres === "0") {
+        // Si es Poliza al vencimiento, establecer Periodicidad en "30" (mensual)
+        periodicidadValue = "30";
+      }
+
+      const requestData = {
+        PagoInteres: formulario.PagoInteres,
+        Monto: parseInt(formulario.Monto),
+        Plazo: parseInt(formulario.Plazo),
+        Periodicidad: parseInt(periodicidadValue),
+      };
+
+      const responseData = await fetchJson(
+        "https://formulario1back.onrender.com/api/Info/SimularInversion",
+        requestData
+      );
+      setDataTable(responseData?.SimularInversionResult);
+      console.log(responseData);
+      setShowResults(true);
+    } catch (error) {
+      console.error(error);
+      // Maneja el error de la manera que prefieras
+    }
+  };
+  return (
+    <div>
+      <Box
+        component="form"
+        onSubmit={(event) => handleSubmit(event, formulario)}
+        noValidate
+        autoComplete="off"
+        style={{ textAlign: "center" }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <h4 className="inForm">Simulador Inversión</h4>
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControl variant="outlined" style={{ minWidth: 120 }}>
+              <InputLabel id="select-label">Tipo Pago</InputLabel>
+              <Select
+                name="PagoInteres"
+                labelId="select-label"
+                id="select"
+                value={formulario.PagoInteres}
+                onChange={handleChange}
+                label="Tipo Pago"
+              >
+                <MenuItem value="0">Poliza al vencimiento</MenuItem>
+                <MenuItem value="1">Poliza Periodica</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="Plazo"
+              label="Plazo (en dias)"
+              variant="outlined"
+              value={formulario.Plazo}
+              error={mountRequired}
+              inputProps={{ maxLength: 5 }}
+              onChange={handleChangeMount}
+              helperText={mountRequired && "Campo Requerido"}
+            />
+            {showMinValueMessage && (
+              <MinValue
+                Value={formulario.Plazo > 32547 ? "32547" : "31"}
+                Item="Plazo"
+                MaxoMin={formulario.Plazo > 32547 ? "maximo" : "minimo"}
+                Simbol=""
+              />
+            )}
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              name="Monto"
+              label="Capital"
+              variant="outlined"
+              value={formulario.Monto}
+              onChange={handleChangeTerm}
+              error={termRequired}
+              inputProps={{ maxLength: 8 }}
+              helperText={termRequired && "Campo Requerido"}
+            />
+            {showMinTermMessage && (
+              <MinValue
+                Value={formulario.Monto > 10000000 ? "10.000.000,00" : "100,00"}
+                Item="Capital"
+                MaxoMin={formulario.Monto > 10000000 ? "maxima" : "minima"}
+                Simbol="$"
+              />
+            )}
+          </Grid>
+
+          {formulario.PagoInteres === "1" && (
+            <Grid item xs={12}>
+              <FormControl>
+                <FormLabel id="demo-row-radio-buttons-group-label">
+                  Periodicidad
+                </FormLabel>
+                <RadioGroup
+                  row
+                  aria-labelledby="demo-row-radio-buttons-group-label"
+                  name="Periodicidad"
+                  onChange={handleChangePeriod}
+                >
+                  <FormControlLabel
+                    value="30"
+                    control={<Radio />}
+                    label="Mensual"
+                  />
+                  <FormControlLabel
+                    value="60"
+                    control={<Radio />}
+                    label="Bimensual"
+                  />
+                  <FormControlLabel
+                    value="90"
+                    control={<Radio />}
+                    label="Trimestral"
+                  />
+                  <FormControlLabel
+                    value="180"
+                    control={<Radio />}
+                    label="Semestral"
+                  />
+                  <FormControlLabel
+                    value="360"
+                    control={<Radio />}
+                    label="Anual"
+                  />
+                </RadioGroup>
+              </FormControl>
+            </Grid>
+          )}
+
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              style={{ color: "white" }}
+            >
+              Simular
+            </Button>
+          </Grid>
+
+          {showResults && (
+            <>
+              <Grid item xs={12}>
+                <h4 className="inForm">Resultados Simulación</h4>
+              </Grid>
+              <Grid item xs={12}>
+                <TableInversion
+                  dataTable={dataTable}
+                  Monto={formulario.Monto}
+                />
+              </Grid>
+            </>
+          )}
+        </Grid>
+      </Box>
+    </div>
+  );
 };

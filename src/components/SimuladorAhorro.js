@@ -1,31 +1,58 @@
 import TextField from "@mui/material/TextField";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { Box, Button, Grid } from "@mui/material";
 import "../App.css";
 import { useState } from "react";
 import { fetchJson } from "../hooks/fetchJson";
 import TableAhorro from "./TableAhorro";
+import MinValue from "./MinValue";
 
 export const SimuladorAhorro = () => {
+  const [showResults, setShowResults] = useState(false);
+  const [mountRequired, setMountRequiered] = useState();
+  const [termRequired, setTermRequiered] = useState();
+  const [showMinValueMessage, setShowMinValueMessage] = useState();
+  const [showMinTermMessage, setShowMinTermMessage] = useState();
   const [dataTable, setDataTable] = useState();
   const [AhorroFechaConvertida, setAhorroFechaConvertida] = useState();
   const [formulario, setFormulario] = useState({
-    amount: "",
-    term: "",
+    amount: null,
+    term: null,
   });
 
-  const handleChange = (event) => {
+  const handleChangeMount = (event) => {
+    const { name, value } = event.target;
+
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+    parseInt(value) < 50 || parseInt(value) > 5000
+      ? setShowMinValueMessage(true)
+      : setShowMinValueMessage(false);
+    value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
+  };
+
+  const handleChangeTerm = (event) => {
     const { name, value } = event.target;
     setFormulario((prevState) => ({
       ...prevState,
       [name]: value,
     }));
+    parseInt(value) < 6 || parseInt(value) > 60
+      ? setShowMinTermMessage(true)
+      : setShowMinTermMessage(false);
+    value.trim() === "" ? setTermRequiered(true) : setTermRequiered(false);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    //console.log(formulario); // Aquí puedes hacer lo que quieras con los valores del formulario
-    fetchData();
+
+    !mountRequired &&
+    !termRequired &&
+    !showMinValueMessage &&
+    !showMinTermMessage
+      ? fetchData()
+      : console.log("No Paso");
   };
   const fetchData = async () => {
     try {
@@ -42,6 +69,7 @@ export const SimuladorAhorro = () => {
       convertirFecha(
         responseData?.SimularAhorroProgramadoResult?.FechaExpiracion
       );
+      setShowResults(true);
     } catch (error) {
       console.error(error);
       // Maneja el error de la manera que prefieras
@@ -68,42 +96,83 @@ export const SimuladorAhorro = () => {
   };
 
   return (
-    <>
-      <h4 className="inForm">Simulacion Ahorro Programado</h4>
+    <div>
       <Box
         component="form"
-        onSubmit={handleSubmit}
-        sx={{
-          "& > :not(style)": { m: 1, width: "30ch", display: "block" }, // Cambio a display: block
-        }}
+        onSubmit={(event) => handleSubmit(event, formulario)}
         noValidate
         autoComplete="off"
+        style={{ textAlign: "center" }}
       >
-        <TextField
-          name="amount"
-          label="Monto"
-          variant="outlined"
-          value={formulario.amount}
-          onChange={handleChange}
-        />
-        <TextField
-          name="term"
-          label="Plazo (en meses)"
-          variant="outlined"
-          value={formulario.term}
-          onChange={handleChange}
-        />
-        <Button type="submit" variant="contained">
-          Simular
-        </Button>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <h4 className="inForm">Simulador Ahorro Programado</h4>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="amount"
+              label="Monto"
+              variant="outlined"
+              value={formulario.amount}
+              error={mountRequired}
+              inputProps={{ maxLength: 4 }}
+              onChange={handleChangeMount}
+              helperText={mountRequired && "Campo Requerido"}
+            />
+            {showMinValueMessage && (
+              <MinValue
+                Value={formulario.amount > 5000 ? "5000,00" : "50,00"}
+                Item="Monto"
+                MaxoMin={formulario.amount > 5000 ? "maximo" : "minimo"}
+                Simbol="$"
+              />
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              name="term"
+              label="Plazo (en meses)"
+              variant="outlined"
+              value={formulario.term}
+              onChange={handleChangeTerm}
+              error={termRequired}
+              inputProps={{ maxLength: 2 }}
+              helperText={termRequired && "Campo Requerido"}
+            />
+            {showMinTermMessage && (
+              <MinValue
+                Value={formulario.term > 60 ? "60" : "6"}
+                Item="Plazo"
+                MaxoMin={formulario.term > 60 ? "maximo" : "minimo"}
+                Simbol="$"
+              />
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              style={{ color: "white" }}
+            >
+              Simular
+            </Button>
+          </Grid>
+          {showResults && (
+            <>
+              <Grid item xs={12}>
+                <h4 className="inForm">Resultados Simulación</h4>
+              </Grid>
+              <Grid item xs={12}>
+                <TableAhorro
+                  dataTable={dataTable}
+                  convertirFecha={convertirFecha}
+                  AhorroFechaConvertida={AhorroFechaConvertida}
+                />
+              </Grid>
+            </>
+          )}
+        </Grid>
       </Box>
-
-      <h4 className="inForm">Resultado Simulacion</h4>
-      <TableAhorro
-        dataTable={dataTable}
-        convertirFecha={convertirFecha}
-        AhorroFechaConvertida={AhorroFechaConvertida}
-      />
-    </>
+    </div>
   );
 };
