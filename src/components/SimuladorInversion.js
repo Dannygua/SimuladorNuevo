@@ -17,6 +17,10 @@ import MinValue from "./MinValue";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import TableInversion from "./TableInversion";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export const SimuladorInversion = () => {
   const [showResults, setShowResults] = useState(false);
@@ -25,12 +29,72 @@ export const SimuladorInversion = () => {
   const [showMinValueMessage, setShowMinValueMessage] = useState();
   const [showMinTermMessage, setShowMinTermMessage] = useState();
   const [dataTable, setDataTable] = useState();
+
   const [formulario, setFormulario] = useState({
     PagoInteres: null,
     Monto: null,
     Plazo: null,
     Periodicidad: null,
   });
+
+  const generatePdf = (TablaPagos) => {
+    if (!Array.isArray(TablaPagos) || TablaPagos.length === 0) {
+      console.log("Cargando Tabla.....");
+      return;
+    }
+
+    const docDefinition = {
+      content: [
+        {
+          table: {
+            headerRows: 1, // Numero de filas de encabezado
+            widths: ["auto", "auto", "auto", "auto", "auto", "auto", "auto"], // Ancho de las columnas
+            body: [
+              [
+                "Numero",
+                "Dias",
+                "Fecha Inicial",
+                "Fecha Final",
+                "Valor a Recibir",
+                "Irf",
+                "Interes Acumulado",
+              ],
+              ...TablaPagos?.map((registro) => [
+                registro?.Nro,
+                registro?.Dias,
+                convertirFecha(registro?.FechaInicial),
+                convertirFecha(registro?.FechaFinal),
+                `$${registro?.Valor?.toFixed(2)}`,
+                `$${registro?.Irf?.toFixed(2)}`,
+                `$${registro?.InteresAcumulado?.toFixed(2)}`,
+              ]),
+            ],
+          },
+        },
+      ],
+    };
+
+    pdfMake.createPdf(docDefinition).download("TablaPagos.pdf");
+  };
+
+  const convertirFecha = (fecha) => {
+    const fechaMilisegundos = parseInt(fecha?.match(/\d+/)[0]);
+    const fechaObjeto = new Date(fechaMilisegundos);
+    const options = { timeZone: "America/Guayaquil" };
+    const año = fechaObjeto.toLocaleString("en-US", {
+      year: "numeric",
+      ...options,
+    });
+    const mes = fechaObjeto.toLocaleString("en-US", {
+      month: "2-digit",
+      ...options,
+    });
+    const dia = fechaObjeto.toLocaleString("en-US", {
+      day: "2-digit",
+      ...options,
+    });
+    return `${año}-${mes}-${dia}`;
+  };
 
   const handleChangeMount = (event) => {
     const { name, value } = event.target;
@@ -83,6 +147,8 @@ export const SimuladorInversion = () => {
     !showMinTermMessage
       ? fetchData()
       : console.log("No Paso");
+
+    generatePdf();
   };
   const fetchData = async () => {
     try {
@@ -105,7 +171,9 @@ export const SimuladorInversion = () => {
       );
       setDataTable(responseData?.SimularInversionResult);
       console.log(responseData);
+
       setShowResults(true);
+      generatePdf(responseData?.SimularInversionResult?.TablaPagos);
     } catch (error) {
       console.error(error);
       // Maneja el error de la manera que prefieras

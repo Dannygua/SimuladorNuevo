@@ -46,7 +46,6 @@ export const SimuladorAhorro = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
     !mountRequired &&
     !termRequired &&
     !showMinValueMessage &&
@@ -157,6 +156,7 @@ export const SimuladorAhorro = () => {
               Simular
             </Button>
           </Grid>
+
           {showResults && (
             <>
               <Grid item xs={12}>

@@ -34,7 +34,7 @@ export const SimuladorCredito = () => {
   const [formulario, setFormulario] = useState({
     TipoCredito: null,
     Monto: null,
-    Plazo: null,
+    Plazo: "",
     TipoPlazo: "M",
     IdMoneda: 1,
     TipoTabla: null,
@@ -209,26 +209,29 @@ export const SimuladorCredito = () => {
               </RadioGroup>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
-            <TextField
-              name="VentasAnuales"
-              label="Ventas Anuales"
-              variant="outlined"
-              value={formulario.VentasAnuales}
-              onChange={handleChangeAnual}
-              error={anualRequired}
-              inputProps={{ maxLength: 6 }}
-              helperText={anualRequired && "Campo Requerido"}
-            />
-            {showMinValueMessage && (
-              <MinValue
-                Value={"100.000,00"}
-                Item="Ventas Anuales"
-                MaxoMin={"maximas"}
-                Simbol="$"
+          {formulario.TipoCredito === "04" && (
+            <Grid item xs={12}>
+              <TextField
+                name="VentasAnuales"
+                label="Ventas Anuales"
+                variant="outlined"
+                value={formulario.VentasAnuales}
+                onChange={handleChangeAnual}
+                error={anualRequired}
+                inputProps={{ maxLength: 6 }}
+                helperText={anualRequired && "Campo Requerido"}
               />
-            )}
-          </Grid>
+              {showMinValueMessage && (
+                <MinValue
+                  Value={"100.000,00"}
+                  Item="Ventas Anuales"
+                  MaxoMin={"maximas"}
+                  Simbol="$"
+                />
+              )}
+            </Grid>
+          )}
+
           <Grid item xs={12}>
             <TextField
               name="Monto"
@@ -273,8 +276,11 @@ export const SimuladorCredito = () => {
                 onChange={handleChangeDiaPago}
                 label="Dia de Pago"
               >
-                <MenuItem value="1">1</MenuItem>
-                <MenuItem value="2">2</MenuItem>
+                {Array.from({ length: 31 }, (_, index) => (
+                  <MenuItem key={index + 1} value={(index + 1).toString()}>
+                    {index + 1}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
