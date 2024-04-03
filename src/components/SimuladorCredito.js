@@ -32,14 +32,14 @@ export const SimuladorCredito = () => {
   const [dataTable, setDataTable] = useState();
 
   const [formulario, setFormulario] = useState({
-    TipoCredito: null,
-    Monto: null,
-    Plazo: "",
+    TipoCredito: "",
+    Monto: "",
+    Plazo: 6,
     TipoPlazo: "M",
     IdMoneda: 1,
-    TipoTabla: null,
-    VentasAnuales: null,
-    DiaPago: null,
+    TipoTabla: "F",
+    VentasAnuales: "",
+    DiaPago: "1",
   });
 
   const marks = [
@@ -72,61 +72,50 @@ export const SimuladorCredito = () => {
     return `${año}-${mes}-${dia}`;
   };
 
-  const handleChangeAnual = (event) => {
-    const { name, value } = event.target;
-
+  const handleChange = (name, value) => {
     setFormulario((prevState) => ({
       ...prevState,
       [name]: value,
     }));
+  };
+
+  const handleChangeAnual = (event) => {
+    const { name, value } = event.target;
+
+    handleChange(name, value);
     parseInt(value) > 100000
       ? setShowMinValueMessage(true)
       : setShowMinValueMessage(false);
-    value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
+    value.trim() === "" ? setAnualRequiered(true) : setAnualRequiered(false);
   };
 
   const handleChangeTipoCredito = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
   };
 
   const handleChangePlazo = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
   };
 
   const handleChangeDiaPago = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
   };
 
   const handleChangeTipoTabla = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
   };
 
   const handleChangeMount = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
     parseInt(value) < 500 || parseInt(value) > 50000
       ? setShowMinMountMessage(true)
       : setShowMinMountMessage(false);
-    value.trim() === "" ? setAnualRequiered(true) : setAnualRequiered(false);
+    value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
   };
 
   const handleSubmit = (event) => {
@@ -256,7 +245,7 @@ export const SimuladorCredito = () => {
             <InputLabel id="select-label">Plazo (en meses)</InputLabel>
             <Slider
               name="Plazo"
-              value={formulario.Plazo}
+              value={formulario?.Plazo}
               onChange={handleChangePlazo}
               valueLabelDisplay="auto"
               sx={{ width: 350 }}

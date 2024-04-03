@@ -24,18 +24,27 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export const SimuladorInversion = () => {
   const [showResults, setShowResults] = useState(false);
-  const [mountRequired, setMountRequiered] = useState();
+  const [plazoRequired, setPlazoRequiered] = useState();
   const [termRequired, setTermRequiered] = useState();
+  const [periodRequired, setPeriodRequiered] = useState();
+  const [tipoPagoRequired, setTipoPagoRequiered] = useState();
   const [showMinValueMessage, setShowMinValueMessage] = useState();
   const [showMinTermMessage, setShowMinTermMessage] = useState();
   const [dataTable, setDataTable] = useState();
 
   const [formulario, setFormulario] = useState({
-    PagoInteres: null,
-    Monto: null,
-    Plazo: null,
-    Periodicidad: null,
+    PagoInteres: "0",
+    Monto: "",
+    Plazo: "",
+    Periodicidad: "30",
   });
+
+  const handleChange = (name, value) => {
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
   const generatePdf = (TablaPagos) => {
     if (!Array.isArray(TablaPagos) || TablaPagos.length === 0) {
@@ -99,22 +108,16 @@ export const SimuladorInversion = () => {
   const handleChangeMount = (event) => {
     const { name, value } = event.target;
 
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
     parseInt(value) < 31 || parseInt(value) > 32547
       ? setShowMinValueMessage(true)
       : setShowMinValueMessage(false);
-    value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
+    value.trim() === "" ? setPlazoRequiered(true) : setPlazoRequiered(false);
   };
 
   const handleChangeTerm = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
     parseInt(value) < 100 || parseInt(value) > 10000000
       ? setShowMinTermMessage(true)
       : setShowMinTermMessage(false);
@@ -123,32 +126,28 @@ export const SimuladorInversion = () => {
 
   const handleChangePeriod = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
+    value.trim() === "" ? setPeriodRequiered(true) : setPeriodRequiered(false);
   };
 
-  const handleChange = (event) => {
+  const handleChangeTipoPago = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
+    value.trim() === ""
+      ? setTipoPagoRequiered(true)
+      : setTipoPagoRequiered(false);
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(formulario);
 
-    !mountRequired &&
+    !plazoRequired &&
     !termRequired &&
     !showMinValueMessage &&
     !showMinTermMessage
       ? fetchData()
       : console.log("No Paso");
-
-    generatePdf();
   };
   const fetchData = async () => {
     try {
@@ -201,7 +200,7 @@ export const SimuladorInversion = () => {
                 labelId="select-label"
                 id="select"
                 value={formulario.PagoInteres}
-                onChange={handleChange}
+                onChange={handleChangeTipoPago}
                 label="Tipo Pago"
               >
                 <MenuItem value="0">Poliza al vencimiento</MenuItem>
@@ -215,10 +214,10 @@ export const SimuladorInversion = () => {
               label="Plazo (en dias)"
               variant="outlined"
               value={formulario.Plazo}
-              error={mountRequired}
+              error={plazoRequired}
               inputProps={{ maxLength: 5 }}
               onChange={handleChangeMount}
-              helperText={mountRequired && "Campo Requerido"}
+              helperText={plazoRequired && "Campo Requerido"}
             />
             {showMinValueMessage && (
               <MinValue

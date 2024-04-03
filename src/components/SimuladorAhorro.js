@@ -15,29 +15,38 @@ export const SimuladorAhorro = () => {
   const [dataTable, setDataTable] = useState();
   const [AhorroFechaConvertida, setAhorroFechaConvertida] = useState();
   const [formulario, setFormulario] = useState({
-    amount: null,
-    term: null,
+    amount: "",
+    term: "",
   });
+
+  const handleChange = (name, value) => {
+    if (/^\d*$/.test(value)) {
+      setFormulario((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    } else {
+      setFormulario((prevState) => ({
+        ...prevState,
+        [name]: "",
+      }));
+    }
+  };
 
   const handleChangeMount = (event) => {
     const { name, value } = event.target;
+    handleChange(name, value);
 
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
     parseInt(value) < 50 || parseInt(value) > 5000
       ? setShowMinValueMessage(true)
       : setShowMinValueMessage(false);
     value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
+    console.log(value);
   };
 
   const handleChangeTerm = (event) => {
     const { name, value } = event.target;
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleChange(name, value);
     parseInt(value) < 6 || parseInt(value) > 60
       ? setShowMinTermMessage(true)
       : setShowMinTermMessage(false);
@@ -51,7 +60,7 @@ export const SimuladorAhorro = () => {
     !showMinValueMessage &&
     !showMinTermMessage
       ? fetchData()
-      : console.log("No Paso");
+      : console.log("Todos los datos son Requeridos");
   };
   const fetchData = async () => {
     try {
