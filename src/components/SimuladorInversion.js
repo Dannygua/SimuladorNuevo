@@ -40,10 +40,14 @@ export const SimuladorInversion = () => {
   });
 
   const handleChange = (name, value) => {
-    setFormulario((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    if (/^\d*$/.test(value)) {
+      setFormulario((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    } else {
+      value = "";
+    }
   };
 
   const generatePdf = (TablaPagos) => {

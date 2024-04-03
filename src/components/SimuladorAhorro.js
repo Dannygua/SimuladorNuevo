@@ -26,10 +26,7 @@ export const SimuladorAhorro = () => {
         [name]: value,
       }));
     } else {
-      setFormulario((prevState) => ({
-        ...prevState,
-        [name]: "",
-      }));
+      value = "";
     }
   };
 
