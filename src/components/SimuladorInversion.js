@@ -32,6 +32,8 @@ export const SimuladorInversion = () => {
   const [showMinTermMessage, setShowMinTermMessage] = useState();
   const [dataTable, setDataTable] = useState();
 
+  let suma = null;
+
   const [formulario, setFormulario] = useState({
     PagoInteres: "0",
     Monto: "",
@@ -39,14 +41,28 @@ export const SimuladorInversion = () => {
     Periodicidad: "30",
   });
 
-  const handleChange = (name, value) => {
-    if (/^\d*$/.test(value)) {
-      setFormulario((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    } else {
-      value = "";
+  const calcularSuma = (TablaPagos) => {
+    if (TablaPagos) {
+      suma = TablaPagos.reduce(
+        (accumulator, registro) => {
+          accumulator.Dias += registro.Dias;
+          accumulator.Valor += registro.Valor;
+          accumulator.Irf += registro.Irf;
+          accumulator.InteresAcumulado += registro.InteresAcumulado;
+          return accumulator;
+        },
+        {
+          Dias: 0,
+          Valor: 0,
+          Irf: 0,
+          InteresAcumulado: 0,
+        }
+      );
+      // Redondear los valores a 2 cifras decimales
+      suma.Dias = suma.Dias;
+      suma.Valor = suma.Valor;
+      suma.Irf = suma.Irf;
+      suma.InteresAcumulado = suma.InteresAcumulado;
     }
   };
 
@@ -55,6 +71,7 @@ export const SimuladorInversion = () => {
       console.log("Cargando Tabla.....");
       return;
     }
+    calcularSuma(TablaPagos);
 
     const docDefinition = {
       content: [
@@ -81,6 +98,16 @@ export const SimuladorInversion = () => {
                 `$${registro?.Irf?.toFixed(2)}`,
                 `$${registro?.InteresAcumulado?.toFixed(2)}`,
               ]),
+              // Fila de suma
+              [
+                `Totales`,
+                `${suma?.Dias}`,
+                { colSpan: 2, text: "" },
+                "",
+                `$${suma?.Valor.toFixed(2)}`,
+                `$${suma?.Irf.toFixed(2)}`,
+                `$${suma?.InteresAcumulado.toFixed(2)}`,
+              ],
             ],
           },
         },
@@ -109,10 +136,22 @@ export const SimuladorInversion = () => {
     return `${año}-${mes}-${dia}`;
   };
 
-  const handleChangeMount = (event) => {
-    const { name, value } = event.target;
+  const handleChange = (name, value) => {
+    if (/^\d*$/.test(value)) {
+      setFormulario((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    } else {
+      value = "";
+    }
+    return value;
+  };
 
-    handleChange(name, value);
+  const handleChangeMount = (event) => {
+    let { name, value } = event.target;
+
+    value = handleChange(name, value);
     parseInt(value) < 31 || parseInt(value) > 32547
       ? setShowMinValueMessage(true)
       : setShowMinValueMessage(false);
@@ -120,8 +159,8 @@ export const SimuladorInversion = () => {
   };
 
   const handleChangeTerm = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
     parseInt(value) < 100 || parseInt(value) > 10000000
       ? setShowMinTermMessage(true)
       : setShowMinTermMessage(false);
@@ -129,14 +168,14 @@ export const SimuladorInversion = () => {
   };
 
   const handleChangePeriod = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
     value.trim() === "" ? setPeriodRequiered(true) : setPeriodRequiered(false);
   };
 
   const handleChangeTipoPago = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
     value.trim() === ""
       ? setTipoPagoRequiered(true)
       : setTipoPagoRequiered(false);
@@ -144,14 +183,14 @@ export const SimuladorInversion = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formulario);
 
     !plazoRequired &&
     !termRequired &&
     !showMinValueMessage &&
     !showMinTermMessage
       ? fetchData()
-      : console.log("No Paso");
+      : console.log("Todos los valores son requeridos");
+    console.log(formulario);
   };
   const fetchData = async () => {
     try {
@@ -264,6 +303,7 @@ export const SimuladorInversion = () => {
                   row
                   aria-labelledby="demo-row-radio-buttons-group-label"
                   name="Periodicidad"
+                  value={formulario.Periodicidad}
                   onChange={handleChangePeriod}
                 >
                   <FormControlLabel

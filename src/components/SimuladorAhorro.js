@@ -28,22 +28,22 @@ export const SimuladorAhorro = () => {
     } else {
       value = "";
     }
+    return value;
   };
 
   const handleChangeMount = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
 
     parseInt(value) < 50 || parseInt(value) > 5000
       ? setShowMinValueMessage(true)
       : setShowMinValueMessage(false);
-    value.trim() === "" ? setMountRequiered(true) : setMountRequiered(false);
-    console.log(value);
+    value === "" ? setMountRequiered(true) : setMountRequiered(false);
   };
 
   const handleChangeTerm = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
     parseInt(value) < 6 || parseInt(value) > 60
       ? setShowMinTermMessage(true)
       : setShowMinTermMessage(false);

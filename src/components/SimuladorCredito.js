@@ -17,9 +17,12 @@ import "../App.css";
 import { useState } from "react";
 import { fetchJson } from "../hooks/fetchJson";
 import MinValue from "./MinValue";
-
 import TableCredito from "./TableCredito";
 import TableDesembolso from "./TableDesembolso";
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export const SimuladorCredito = () => {
   const [showResults, setShowResults] = useState(false);
@@ -31,8 +34,10 @@ export const SimuladorCredito = () => {
   const [fechaInicioConvertida, setFechaInicioConvertida] = useState();
   const [dataTable, setDataTable] = useState();
 
+  let suma = null;
+
   const [formulario, setFormulario] = useState({
-    TipoCredito: "",
+    TipoCredito: "02",
     Monto: "",
     Plazo: 6,
     TipoPlazo: "M",
@@ -52,6 +57,82 @@ export const SimuladorCredito = () => {
       label: "60",
     },
   ];
+
+  const calcularSuma = (tablaAmortizacion) => {
+    if (tablaAmortizacion) {
+      suma = tablaAmortizacion.reduce(
+        (accumulator, registro) => {
+          accumulator.CapitalProyectado += registro.CapitalProyectado;
+          accumulator.InteresProyectado += registro.InteresProyectado;
+          accumulator.SeguroProyectado += registro.SeguroProyectado;
+          accumulator.Valor += registro.Valor;
+          return accumulator;
+        },
+        {
+          CapitalProyectado: 0,
+          InteresProyectado: 0,
+          SeguroProyectado: 0,
+          Valor: 0,
+        }
+      );
+      // Redondear los valores a 2 cifras decimales
+      suma.CapitalProyectado = suma.CapitalProyectado;
+      suma.InteresProyectado = suma.InteresProyectado;
+      suma.SeguroProyectado = suma.SeguroProyectado;
+      suma.Valor = suma.Valor;
+    }
+  };
+
+  const generatePdf = (TablaAmortizacion) => {
+    if (!Array.isArray(TablaAmortizacion) || TablaAmortizacion.length === 0) {
+      console.log("Cargando Tabla.....");
+      return;
+    }
+    calcularSuma(TablaAmortizacion);
+
+    const docDefinition = {
+      content: [
+        {
+          table: {
+            headerRows: 1,
+            widths: ["auto", "auto", "auto", "auto", "auto", "auto", "auto"],
+            body: [
+              [
+                "Cuota",
+                "Fecha Vencimiento",
+                "Saldo Capital",
+                "Capital",
+                "Interes",
+                "Desgravamen",
+                "Valor",
+              ],
+              ...TablaAmortizacion.map((registro) => [
+                registro.NumeroCuota,
+                convertirFecha(registro.FechaVencimiento),
+                `$${registro.SaldoCapital.toFixed(2)}`,
+                `$${registro?.CapitalProyectado.toFixed(2)}`,
+                `$${registro.InteresProyectado.toFixed(2)}`,
+                `$${registro.SeguroProyectado.toFixed(2)}`,
+                `$${registro.Valor.toFixed(2)}`,
+              ]),
+              // Fila de suma
+              [
+                `Cuotas ${TablaAmortizacion.length}`,
+                { colSpan: 2, text: "" },
+                "",
+                `$${suma?.CapitalProyectado.toFixed(2)}`,
+                `$${suma?.InteresProyectado.toFixed(2)}`,
+                `$${suma?.SeguroProyectado.toFixed(2)}`,
+                `$${suma?.Valor.toFixed(2)}`,
+              ],
+            ],
+          },
+        },
+      ],
+    };
+
+    pdfMake.createPdf(docDefinition).download("TablaPagos.pdf");
+  };
 
   const convertirFecha = (fecha) => {
     const fechaMilisegundos = parseInt(fecha?.match(/\d+/)[0]);
@@ -81,10 +162,19 @@ export const SimuladorCredito = () => {
     } else {
       value = "";
     }
+    return value;
+  };
+
+  const handleChangeNotNumbre = (name, value) => {
+    setFormulario((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   const handleChangeAnual = (event) => {
-    const { name, value } = event.target;
+    let { name, value } = event.target;
+    value = handleChange(name, value);
 
     handleChange(name, value);
     parseInt(value) > 100000
@@ -94,28 +184,28 @@ export const SimuladorCredito = () => {
   };
 
   const handleChangeTipoCredito = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
   };
 
   const handleChangePlazo = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
   };
 
   const handleChangeDiaPago = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
   };
 
   const handleChangeTipoTabla = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    handleChangeNotNumbre(name, value);
   };
 
   const handleChangeMount = (event) => {
-    const { name, value } = event.target;
-    handleChange(name, value);
+    let { name, value } = event.target;
+    value = handleChange(name, value);
     parseInt(value) < 500 || parseInt(value) > 50000
       ? setShowMinMountMessage(true)
       : setShowMinMountMessage(false);
@@ -124,14 +214,15 @@ export const SimuladorCredito = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formulario);
 
     !mountRequired &&
     !anualRequired &&
     !showMinValueMessage &&
     !showMinMountMessage
       ? fetchData()
-      : console.log("No Paso");
+      : console.log("Todos los datos son Requeridos");
+
+    console.log(formulario);
   };
   const fetchData = async () => {
     try {
@@ -157,8 +248,8 @@ export const SimuladorCredito = () => {
       setFechaInicioConvertida(
         convertirFecha(responseData?.SimularCreditoResult?.FechaInicio)
       );
-      console.log(responseData);
       setShowResults(true);
+      generatePdf(responseData?.SimularCreditoResult?.TablaAmortizacion);
     } catch (error) {
       console.error(error);
       // Maneja el error de la manera que prefieras
@@ -187,6 +278,7 @@ export const SimuladorCredito = () => {
                 row
                 aria-labelledby="demo-row-radio-buttons-group-label"
                 name="TipoCredito"
+                value={formulario.TipoCredito}
                 onChange={handleChangeTipoCredito}
               >
                 <FormControlLabel

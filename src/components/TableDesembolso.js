@@ -35,11 +35,11 @@ const TableDesembolso = ({ dataTable, Monto }) => {
             </tr>
             <tr>
               <td>Rubros adicionales (Certificado Aportación)</td>
-              <td>${valorDesembolso.toFixed(2)}</td>
+              <td>${(10).toFixed(2)}</td>
             </tr>
             <tr>
               <td>Total</td>
-              <td>${valorDesembolso.toFixed(2)}</td>
+              <td>${(valorDesembolso - 10).toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
