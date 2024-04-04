@@ -19,7 +19,7 @@ import MenuItem from "@mui/material/MenuItem";
 import TableInversion from "./TableInversion";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
-
+import IncoopLogo from "../img/incoop";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export const SimuladorInversion = () => {
@@ -76,42 +76,96 @@ export const SimuladorInversion = () => {
     const docDefinition = {
       content: [
         {
+          image: IncoopLogo,
+          style: "ImageIncoop",
+          width: 200,
+          height: 100,
+        },
+        {
+          text: "Simulador de Inversión",
+          style: "Title",
+        },
+        {
           table: {
             headerRows: 1, // Numero de filas de encabezado
-            widths: ["auto", "auto", "auto", "auto", "auto", "auto", "auto"], // Ancho de las columnas
+            widths: [60, 40, 80, 80, 90, 40, 80], // Ancho de las columnas
             body: [
               [
-                "Numero",
-                "Dias",
-                "Fecha Inicial",
-                "Fecha Final",
-                "Valor a Recibir",
-                "Irf",
-                "Interes Acumulado",
+                { text: "Numero", style: "tableHeader" },
+                { text: "Dias", style: "tableHeader" },
+                { text: "Fecha Inicial", style: "tableHeader" },
+                { text: "Fecha Final", style: "tableHeader" },
+                { text: "Valor a Recibir", style: "tableHeader" },
+                { text: "Irf", style: "tableHeader" },
+                { text: "Interes Acumulado", style: "tableHeader" },
               ],
               ...TablaPagos?.map((registro) => [
-                registro?.Nro,
-                registro?.Dias,
-                convertirFecha(registro?.FechaInicial),
-                convertirFecha(registro?.FechaFinal),
-                `$${registro?.Valor?.toFixed(2)}`,
-                `$${registro?.Irf?.toFixed(2)}`,
-                `$${registro?.InteresAcumulado?.toFixed(2)}`,
+                {
+                  text: registro?.Nro,
+                  style: "tableCell",
+                },
+                {
+                  text: registro?.Dias,
+                  style: "tableCell",
+                },
+                {
+                  text: convertirFecha(registro?.FechaInicial),
+                  style: "tableCell",
+                },
+                {
+                  text: convertirFecha(registro?.FechaFinal),
+                  style: "tableCell",
+                },
+                { text: `$${registro?.Valor?.toFixed(2)}`, style: "tableCell" },
+                { text: `$${registro?.Irf?.toFixed(2)}`, style: "tableCell" },
+                {
+                  text: `$${registro?.InteresAcumulado?.toFixed(2)}`,
+                  style: "tableCell",
+                },
               ]),
               // Fila de suma
               [
-                `Totales`,
-                `${suma?.Dias}`,
-                { colSpan: 2, text: "" },
+                { text: `Totales`, style: "tableCell" },
+                { text: `${suma?.Dias}`, style: "tableCell" },
+                { colSpan: 2, text: "", style: "tableCell" },
                 "",
-                `$${suma?.Valor.toFixed(2)}`,
-                `$${suma?.Irf.toFixed(2)}`,
-                `$${suma?.InteresAcumulado.toFixed(2)}`,
+                { text: `$${suma?.Valor.toFixed(2)}`, style: "tableCell" },
+                { text: `$${suma?.Irf.toFixed(2)}`, style: "tableCell" },
+                {
+                  text: `$${suma?.InteresAcumulado.toFixed(2)}`,
+                  style: "tableCell",
+                },
               ],
             ],
           },
         },
       ],
+
+      styles: {
+        tableHeader: {
+          fillColor: "#F79530",
+          color: "#ffffff",
+          margin: [0, 4, 0, 4],
+          fontSize: 10,
+          alignment: "center",
+          bolditalics: true,
+        },
+        tableCell: {
+          fillColor: "#ffffff",
+          fontSize: 10,
+          color: "#000000",
+          alignment: "center",
+        },
+        Title: {
+          color: "#F79530",
+          margin: [0, 0, 0, 25],
+          fontSize: 17,
+        },
+        ImageIncoop: {
+          margin: [0, 0, 0, 10],
+          alignment: "right",
+        },
+      },
     };
 
     pdfMake.createPdf(docDefinition).download("TablaPagos.pdf");
@@ -231,11 +285,11 @@ export const SimuladorInversion = () => {
         style={{ textAlign: "center" }}
       >
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <h4 className="inForm">Simulador Inversión</h4>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <FormControl variant="outlined" style={{ minWidth: 120 }}>
               <InputLabel id="select-label">Tipo Pago</InputLabel>
               <Select
@@ -251,7 +305,7 @@ export const SimuladorInversion = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <TextField
               name="Plazo"
               label="Plazo (en dias)"
@@ -272,7 +326,7 @@ export const SimuladorInversion = () => {
             )}
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <TextField
               name="Monto"
               label="Capital"
@@ -294,7 +348,7 @@ export const SimuladorInversion = () => {
           </Grid>
 
           {formulario.PagoInteres === "1" && (
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={12} md={12} alignItems="center">
               <FormControl>
                 <FormLabel id="demo-row-radio-buttons-group-label">
                   Periodicidad
@@ -307,26 +361,41 @@ export const SimuladorInversion = () => {
                   onChange={handleChangePeriod}
                 >
                   <FormControlLabel
+                    xs={12}
+                    sm={12}
+                    md={12}
                     value="30"
                     control={<Radio />}
                     label="Mensual"
                   />
                   <FormControlLabel
+                    xs={12}
+                    sm={12}
+                    md={12}
                     value="60"
                     control={<Radio />}
                     label="Bimensual"
                   />
                   <FormControlLabel
+                    xs={12}
+                    sm={12}
+                    md={12}
                     value="90"
                     control={<Radio />}
                     label="Trimestral"
                   />
                   <FormControlLabel
+                    xs={4}
+                    sm={4}
+                    md={12}
                     value="180"
                     control={<Radio />}
                     label="Semestral"
                   />
                   <FormControlLabel
+                    xs={4}
+                    sm={4}
+                    md={12}
                     value="360"
                     control={<Radio />}
                     label="Anual"
@@ -336,7 +405,7 @@ export const SimuladorInversion = () => {
             </Grid>
           )}
 
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <Button
               type="submit"
               variant="contained"
@@ -348,10 +417,10 @@ export const SimuladorInversion = () => {
 
           {showResults && (
             <>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <h4 className="inForm">Resultados Simulación</h4>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <TableInversion
                   dataTable={dataTable}
                   Monto={formulario.Monto}

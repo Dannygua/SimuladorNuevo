@@ -110,10 +110,10 @@ export const SimuladorAhorro = () => {
         style={{ textAlign: "center" }}
       >
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <h4 className="inForm">Simulador Ahorro Programado</h4>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <TextField
               name="amount"
               label="Monto"
@@ -133,7 +133,7 @@ export const SimuladorAhorro = () => {
               />
             )}
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <TextField
               name="term"
               label="Plazo (en meses)"
@@ -153,7 +153,7 @@ export const SimuladorAhorro = () => {
               />
             )}
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <Button
               type="submit"
               variant="contained"
@@ -165,10 +165,10 @@ export const SimuladorAhorro = () => {
 
           {showResults && (
             <>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <h4 className="inForm">Resultados Simulación</h4>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <TableAhorro
                   dataTable={dataTable}
                   convertirFecha={convertirFecha}

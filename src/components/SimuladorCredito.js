@@ -21,6 +21,7 @@ import TableCredito from "./TableCredito";
 import TableDesembolso from "./TableDesembolso";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import IncoopLogo from "../img/incoop";
 
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -93,42 +94,110 @@ export const SimuladorCredito = () => {
     const docDefinition = {
       content: [
         {
+          image: IncoopLogo,
+          style: "ImageIncoop",
+          width: 200,
+          height: 100,
+        },
+        {
+          text: "Simulador de Credito",
+          style: "Title",
+        },
+        {
           table: {
             headerRows: 1,
-            widths: ["auto", "auto", "auto", "auto", "auto", "auto", "auto"],
+            widths: [50, 100, 80, 50, 50, 80, 50],
             body: [
               [
-                "Cuota",
-                "Fecha Vencimiento",
-                "Saldo Capital",
-                "Capital",
-                "Interes",
-                "Desgravamen",
-                "Valor",
+                { text: "Cuota", style: "tableHeader" },
+                { text: "Fecha Vencimiento", style: "tableHeader" },
+                { text: "Saldo Capital", style: "tableHeader" },
+                { text: "Capital", style: "tableHeader" },
+                { text: "Interes", style: "tableHeader" },
+                { text: "Desgravamen", style: "tableHeader" },
+                { text: "Valor", style: "tableHeader" },
               ],
               ...TablaAmortizacion.map((registro) => [
-                registro.NumeroCuota,
-                convertirFecha(registro.FechaVencimiento),
-                `$${registro.SaldoCapital.toFixed(2)}`,
-                `$${registro?.CapitalProyectado.toFixed(2)}`,
-                `$${registro.InteresProyectado.toFixed(2)}`,
-                `$${registro.SeguroProyectado.toFixed(2)}`,
-                `$${registro.Valor.toFixed(2)}`,
+                {
+                  text: registro.NumeroCuota,
+                  style: "tableCell",
+                },
+                {
+                  text: convertirFecha(registro.FechaVencimiento),
+                  style: "tableCell",
+                },
+                {
+                  text: `$${registro.SaldoCapital.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                {
+                  text: `$${registro?.CapitalProyectado.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                {
+                  text: `$${registro.InteresProyectado.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                {
+                  text: `$${registro.SeguroProyectado.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                {
+                  text: `$${registro.Valor.toFixed(2)}`,
+                  style: "tableCell",
+                },
               ]),
               // Fila de suma
               [
-                `Cuotas ${TablaAmortizacion.length}`,
-                { colSpan: 2, text: "" },
-                "",
-                `$${suma?.CapitalProyectado.toFixed(2)}`,
-                `$${suma?.InteresProyectado.toFixed(2)}`,
-                `$${suma?.SeguroProyectado.toFixed(2)}`,
-                `$${suma?.Valor.toFixed(2)}`,
+                {
+                  text: `Cuotas ${TablaAmortizacion.length}`,
+                  style: "tableCell",
+                },
+                { colSpan: 2, text: "", style: "tableCell" },
+                { text: "", style: "tableCell" },
+                {
+                  text: `$${suma?.CapitalProyectado.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                {
+                  text: `$${suma?.InteresProyectado.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                {
+                  text: `$${suma?.SeguroProyectado.toFixed(2)}`,
+                  style: "tableCell",
+                },
+                { text: `$${suma?.Valor.toFixed(2)}`, style: "tableCell" },
               ],
             ],
           },
         },
       ],
+      styles: {
+        tableHeader: {
+          fillColor: "#F79530",
+          color: "#ffffff",
+          margin: [0, 4, 0, 4],
+          fontSize: 10,
+          alignment: "center",
+          bolditalics: true,
+        },
+        tableCell: {
+          fillColor: "#ffffff",
+          fontSize: 10,
+          color: "#000000",
+          alignment: "center",
+        },
+        Title: {
+          color: "#F79530",
+          margin: [0, 0, 0, 25],
+          fontSize: 17,
+        },
+        ImageIncoop: {
+          margin: [0, 0, 0, 10],
+          alignment: "right",
+        },
+      },
     };
 
     pdfMake.createPdf(docDefinition).download("TablaPagos.pdf");
@@ -266,10 +335,10 @@ export const SimuladorCredito = () => {
         style={{ textAlign: "center" }}
       >
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <h4 className="inForm">Simulador Credito</h4>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <FormControl>
               <FormLabel id="demo-row-radio-buttons-group-label">
                 Tipo de crédito
@@ -295,7 +364,7 @@ export const SimuladorCredito = () => {
             </FormControl>
           </Grid>
           {formulario.TipoCredito === "04" && (
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={12} md={12}>
               <TextField
                 name="VentasAnuales"
                 label="Ventas Anuales"
@@ -317,7 +386,7 @@ export const SimuladorCredito = () => {
             </Grid>
           )}
 
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <TextField
               name="Monto"
               label="Monto"
@@ -337,20 +406,21 @@ export const SimuladorCredito = () => {
               />
             )}
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={2} sm={3} md={4} lg={4} xl={5}></Grid>
+          <Grid item xs={8} sm={6} md={4} lg={4} xl={2}>
             <InputLabel id="select-label">Plazo (en meses)</InputLabel>
             <Slider
               name="Plazo"
               value={formulario?.Plazo}
               onChange={handleChangePlazo}
               valueLabelDisplay="auto"
-              sx={{ width: 350 }}
               marks={marks}
               min={6} // Establecer el valor mínimo a 6
               max={60}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={2} sm={3} md={4} lg={4} xl={5}></Grid>
+          <Grid item xs={12} sm={12} md={12}>
             <FormControl variant="outlined" style={{ minWidth: 120 }}>
               <InputLabel id="select-label">Dia de Pago</InputLabel>
               <Select
@@ -369,7 +439,7 @@ export const SimuladorCredito = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <FormControl variant="outlined" style={{ minWidth: 120 }}>
               <InputLabel id="select-label">Tipo Tabla</InputLabel>
               <Select
@@ -385,7 +455,7 @@ export const SimuladorCredito = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={12} md={12}>
             <Button
               type="submit"
               variant="contained"
@@ -396,10 +466,10 @@ export const SimuladorCredito = () => {
           </Grid>
           {showResults && (
             <>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <h4 className="inForm">Resultados Simulación</h4>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <TableCredito
                   dataTable={dataTable}
                   fechaExpiracionConvertida={fechaExpiracionConvertida}
@@ -407,10 +477,10 @@ export const SimuladorCredito = () => {
                   Monto={formulario.Monto}
                 />
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <h4 className="inForm">Rubros de desembolso</h4>
               </Grid>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={12} md={12}>
                 <TableDesembolso
                   dataTable={dataTable}
                   Monto={formulario.Monto}
