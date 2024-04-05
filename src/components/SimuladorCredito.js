@@ -88,7 +88,10 @@ export const SimuladorCredito = () => {
     if (!Array.isArray(TablaAmortizacion) || TablaAmortizacion.length === 0) {
       console.log("Cargando Tabla.....");
       return;
+    } else {
+      console.log("Tabla Cargada");
     }
+
     calcularSuma(TablaAmortizacion);
 
     const docDefinition = {
@@ -200,7 +203,7 @@ export const SimuladorCredito = () => {
       },
     };
 
-    pdfMake.createPdf(docDefinition).download("TablaPagos.pdf");
+    pdfMake.createPdf(docDefinition).download("Tabla_Simulacion_Credito.pdf");
   };
 
   const convertirFecha = (fecha) => {

@@ -71,6 +71,7 @@ export const SimuladorInversion = () => {
       console.log("Cargando Tabla.....");
       return;
     }
+    console.log("Tabla Cargada");
     calcularSuma(TablaPagos);
 
     const docDefinition = {
@@ -168,7 +169,7 @@ export const SimuladorInversion = () => {
       },
     };
 
-    pdfMake.createPdf(docDefinition).download("TablaPagos.pdf");
+    pdfMake.createPdf(docDefinition).download("Tabla_Simulacion_Inversion.pdf");
   };
 
   const convertirFecha = (fecha) => {
@@ -204,7 +205,6 @@ export const SimuladorInversion = () => {
 
   const handleChangeMount = (event) => {
     let { name, value } = event.target;
-
     value = handleChange(name, value);
     parseInt(value) < 31 || parseInt(value) > 32547
       ? setShowMinValueMessage(true)
@@ -269,12 +269,14 @@ export const SimuladorInversion = () => {
       console.log(responseData);
 
       setShowResults(true);
-      generatePdf(responseData?.SimularInversionResult?.TablaPagos);
+      formulario.PagoInteres === "1" &&
+        generatePdf(responseData?.SimularInversionResult?.TablaPagos);
     } catch (error) {
       console.error(error);
       // Maneja el error de la manera que prefieras
     }
   };
+
   return (
     <div>
       <Box
@@ -337,6 +339,7 @@ export const SimuladorInversion = () => {
               inputProps={{ maxLength: 8 }}
               helperText={termRequired && "Campo Requerido"}
             />
+
             {showMinTermMessage && (
               <MinValue
                 Value={formulario.Monto > 10000000 ? "10.000.000,00" : "100,00"}
